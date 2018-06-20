@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.SaleFileMapper">
+
+    <cache/>
+
+    <select id="findFileBySaleid" resultType="SaleFile">
+        SELECT * FROM t_sales_file WHERE salesid=#{id} order by id desc
+    </select>
+
+    <insert id="saveFile">
+        INSERT INTO t_sales_file(name,savename,contenttype,size,salesid)
+        VALUES (#{name},#{savename},#{contenttype},#{size},#{salesid})
+    </insert>
+
+    <select id="findOneById" resultType="SaleFile">
+        SELECT * FROM t_sales_file WHERE id=#{id}
+    </select>
+
+    <delete id="delFileBySaleid">
+        DELETE FROM t_sales_file WHERE salesid=#{id}
+    </delete>
+</mapper>

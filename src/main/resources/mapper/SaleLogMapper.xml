@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.SaleLogMapper">
+
+    <cache/>
+
+    <insert id="saveLog">
+        INSERT INTO t_sales_log(context,type,salesid)
+        VALUES (#{context},#{type},#{salesid})
+    </insert>
+
+    <select id="findBySaleid" resultType="SaleLog">
+        SELECT * FROM t_sales_log WHERE salesid=#{id} order by id desc
+    </select>
+
+    <delete id="delLogBySaleid">
+        DELETE FROM t_sales_log WHERE salesid=#{id}
+    </delete>
+</mapper>

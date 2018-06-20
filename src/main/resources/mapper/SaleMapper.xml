@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.SaleMapper">
+ 
+<sql id="Example_Where_Clause">
+        FROM t_sales s inner join t_customer c on c.id=s.custid 
+        						inner join t_user u     on u.id=userid
+       <where>
+            <if test="userid != null and userid != ''">
+                c.userid = #{userid} or (c.userid = '' or c.userid is null)
+            </if>
+            <if test="name != null and name !=''">
+                and s.name like concat('%',#{name},'%')
+            </if>
+            <if test="progress != null and progress !=''">
+                and s.progress like concat('%',#{progress},'%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date(s.lasttime) >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and date(s.lasttime) &lt;= #{endDate}
+            </if>
+       </where>
+</sql>
+
+
+    <select id="findByByParams" resultType="Sale">
+        SELECT s.*,c.id as "customer.id", c.custname as "customer.custname",
+        		u.id as "customer.createUser.id",
+        		u.username as "customer.createUser.username",
+        		u.realname as "customer.createUser.realname"
+        <include refid="Example_Where_Clause"/>
+        order by s.id desc
+        limit ${start},${length}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM t_sales
+    </select>
+
+    <select id="countByStr" resultType="long">
+        SELECT COUNT(*) <include refid="Example_Where_Clause"/>
+    </select>
+
+
+    <select id="findOneById" resultType="Sale">
+        SELECT * FROM t_sales WHERE id=#{id}
+    </select>
+
+    <delete id="del">
+        DELETE FROM t_sales WHERE id=#{id}
+    </delete>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_sales(name, price, custid,progress,lasttime)
+        VALUES (#{name},#{price},#{customer.id},#{progress},#{lasttime})
+    </insert>
+
+    <update id="updatProgress">
+        UPDATE t_sales SET progress=#{progress},lasttime=#{lasttime},successtime=#{successtime} where id=#{id}
+    </update>
+
+    <update id="updateLasttime">
+          UPDATE t_sales SET lasttime=#{lasttime} where id=#{id}
+    </update>
+
+    <select id="findByCustId" resultType="Sale">
+        SELECT * FROM  t_sales WHERE custid=#{custid}
+    </select>
+
+    <select id="countProgress" resultType="java.util.Map">
+        SELECT temp.custtype as 'name',
+        (SELECT COUNT(*) FROM t_sales WHERE t_sales.progress = temp.custtype and date(createtime) >= #{start}
+        and date(createtime) &lt;= #{end}) AS 'value'
+        FROM (SELECT '初次接触' AS 'custtype'
+        UNION SELECT '确认意向'
+        UNION SELECT '发送报价'
+        UNION SELECT '提供合同'
+        UNION SELECT '完成交易'
+        UNION SELECT '交易搁置') AS temp
+    </select>
+    
+    <select id="countProgress1" resultType="java.util.Map">
+        SELECT temp.custtype as 'name',
+        (SELECT COUNT(*) FROM t_sales WHERE t_sales.progress = temp.custtype ) AS 'value'
+        FROM (SELECT '初次接触' AS 'custtype'
+        UNION SELECT '确认意向'
+        UNION SELECT '发送报价'
+        UNION SELECT '提供合同'
+        UNION SELECT '完成交易'
+        UNION SELECT '交易搁置') AS temp
+    </select>
+
+
+    <select id="successCount" resultType="java.lang.Long">
+        SELECT COUNT(1) FROM t_sales
+        WHERE date(successtime) >= #{start}
+        and date(successtime) &lt;= #{end}
+    </select>
+
+    <select id="saleMoney" resultType="java.lang.Float">
+
+        SELECT SUM(price) FROM t_sales
+        WHERE date(successtime) >= #{start}
+        and date(successtime) &lt;= #{end}
+    </select>
+
+
+    <select id="totalUserMoney" resultType="java.util.Map">
+        select user.realname,(select IFNULL(sum(price),0) FROM t_sales where userid = user.id and date(successtime) >= #{start}
+        and date(successtime) &lt;= #{end}) as price
+        from (select id,realname from t_user) as user
+
+    </select>
+</mapper>

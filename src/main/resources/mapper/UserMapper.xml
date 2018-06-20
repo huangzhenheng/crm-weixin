@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tianque.dao.UserMapper">
+
+    <cache/>
+
+
+ 	<resultMap id="userMap" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+         <result column="realname" property="realname"/>
+        <result column="weixin" property="weixin"/>
+         <result column="email" property="email"/>
+        <result column="pinyin" property="pinyin"/>
+        <result column="tel" property="tel"/>
+        <result column="status" property="status"/>
+        <result column="createtime" property="createtime"/>
+        <result column="score_ID" property="score_ID"/>
+
+        <collection property="roleList" ofType="Role">
+            <id column="roleid" property="id"/>
+            <result column="rolename" property="rolename"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="findByUsername" parameterType="string" resultMap="userMap">
+    
+    	select u.*,r.id roleid,r.rolename  from t_user u 
+    		INNER JOIN t_userhasrole hr on u.id=hr.userid
+			INNER JOIN t_role r on hr.roleid=r.id
+    		WHERE u.username = #{username}
+    </select>
+
+    <update id="updateUser">
+        UPDATE t_user SET password = #{password}
+        where id = #{id}
+    </update>
+
+	<select id="findAll" resultMap="userMap">
+       select * from t_user u INNER JOIN t_userhasrole hr on u.id=hr.userid
+			INNER JOIN t_role r on hr.roleid=r.id
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM t_user
+    </select>
+    
+     <select id="countRole" resultType="long">
+        SELECT COUNT(*) FROM t_role
+    </select>
+
+    <select id="countByParam" resultType="long">
+        select COUNT(1) from t_user 
+        <where>
+            <if test="keyword != null and keyword != ''">
+                username LIKE concat('%',#{keyword},'%') or realname  like concat('%',#{keyword},'%')
+            </if>
+        </where>
+    </select>
+    
+    <select id="findRoleCountByParam" resultType="long">
+        SELECT COUNT(*) FROM t_role
+        <where>
+            <if test="keyword != null and keyword != ''">
+               rolename LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+    </select>
+    
+
+    <select id="findByDataTable" resultMap="userMap">
+    	select u.*,r.id roleid,r.rolename  from t_user u 
+    		INNER JOIN t_userhasrole hr on u.id=hr.userid
+			INNER JOIN t_role r on hr.roleid=r.id
+			inner join ( SELECT id FROM t_user
+            <where>
+	            <if test="keyword != null and keyword != ''">
+	                u.username LIKE concat('%',#{keyword},'%') or u.realname  like concat('%',#{keyword},'%')
+	            </if>
+        	</where>
+            <if test="start != null and start != '' and length != null and length != ''">
+            	limit ${start},${length}
+        	</if>
+			) AS temp ON u.id = temp.id
+        order by u.id desc
+        
+    </select>
+    
+    <select id="findAllRole" resultType="Role">
+        SELECT  * FROM t_role  
+        <where>
+            <if test="keyword != null and keyword != ''">
+                rolename LIKE concat('%',#{keyword},'%')
+            </if>
+        </where>
+        order by id asc
+        <if test="start != null and start != '' and length != null and length != ''">
+            limit ${start},${length}
+        </if>
+    </select>
+
+	<!-- 新增用户 -->
+    <insert id="save" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_user (username, password, realname, weixin,tel,email, status,pinyin)
+        VALUES (#{username},#{password},#{realname},#{weixin},#{tel},#{email},#{status},#{pinyin})
+    </insert>
+    
+    <!--   用户-角色 -->
+    <insert id="insert" parameterType="UserRoleKey">
+        INSERT INTO t_userhasrole (userid, roleid)
+        VALUES (#{userid},#{roleid})
+    </insert>
+
+    <select id="findUserById" resultType="User">
+        SELECT * FROM t_user WHERE id = #{id}
+    </select>
+
+    <update id="update" >
+        UPDATE t_user
+        <set>
+            <if test="realname != null and realname != ''">
+                realname = #{realname},
+            </if>
+            <if test="weixin != null and weixin != ''">
+                weixin = #{weixin},
+            </if>
+            <if test="roleid != null and roleid != ''">
+                roleid = #{roleid},
+            </if>
+                status = #{status}
+        </set>
+        where id = #{id}
+    </update>
+    
+   <select id="findRolesByUserid" parameterType="int" resultType="Role">
+        select r.* from t_user u 
+    		INNER JOIN t_userhasrole hr on u.id=hr.userid
+			INNER JOIN t_role r on hr.roleid=r.id
+			where hr.userid=#{userid}
+    </select>
+    
+</mapper>

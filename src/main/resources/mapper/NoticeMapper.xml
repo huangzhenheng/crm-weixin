@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.NoticeMapper">
+
+    <cache/>
+
+    <insert id="saveNotice" parameterType="Notice">
+        INSERT INTO t_notice(title, context, userid, realname)
+        VALUES (#{title},#{context},#{userid},#{realname})
+    </insert>
+
+    <select id="findAllNotice" resultType="Notice">
+        SELECT * FROM t_notice
+        ORDER BY id DESC
+    </select>
+
+    <select id="findNoticeById" parameterType="int" resultType="Notice">
+        SELECT * FROM t_notice
+        WHERE id = #{id}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM t_notice
+    </select>
+
+    <select id="findByParam" resultType="Notice">
+        SELECT * FROM t_notice
+        ORDER BY id DESC
+        limit ${start},${length}
+    </select>
+</mapper>

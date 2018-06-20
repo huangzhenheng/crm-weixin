@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.DocumentMapper">
+
+<!--     <cache/> -->
+
+    <select id="findByFileFid" resultType="Document">
+       SELECT d.id,d.name,d.size,d.createuser,d.type,d.filename,d.md5,
+       		  d.fid,d.contexttype,d.createtime,u.realname as "createuser.realname" 
+       		FROM t_document d inner join t_user u on d.createuser=u.id  WHERE fid = #{fid}
+    </select>
+
+    <select id="findfid" resultType="Document">
+        SELECT * FROM t_document  WHERE id=#{fid}
+    </select>
+
+    <insert id="save">
+     	INSERT INTO t_document(name,size,createuser,type,filename,md5,fid,contexttype)
+     	VALUES (#{name},#{size},#{createuser.id},#{type},#{filename},#{md5},#{fid},#{contexttype})
+    </insert>
+    
+    <delete id="delFileByID">
+    	delete from t_document WHERE id=#{fid}
+    </delete>
+</mapper>

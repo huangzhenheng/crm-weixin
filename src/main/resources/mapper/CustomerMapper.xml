@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.tianque.dao.CustomerMapper">
+
+    <cache/>
+
+    <insert id="save" parameterType="Customer">
+      INSERT INTO t_customer(custname,tel,weixin,email,address,level,remark,pinyin,companyid,userid,type)
+      VALUES (#{custname},#{tel},#{weixin},#{email},#{address},#{level},#{remark},#{pinyin},#{companyid},#{userid},#{type})
+    </insert>
+
+
+    <select id="findByByParams" resultType="Customer">
+        SELECT c.id,c.custname,c.tel,c.weixin,c.email,c.address,c.level,c.remark,c.pinyin,c.companyid,
+        	c.userid as "createUser.id",c.type,u.realname as "createUser.realname"
+         FROM t_customer  c inner join t_user u on u.id=c.userid
+        <where>
+            <if test="userid != null and userid != ''">
+                (c.userid = #{userid} or (c.userid = '' or userid is null))
+            </if>
+            <if test="keyword != null and keyword !=''">
+                and (c.custname like concat('%',#{keyword},'%') or c.pinyin like concat('%',#{keyword},'%') or c.tel like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+        order by c.id desc
+        limit ${start},${length}
+    </select>
+
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM t_customer
+    </select>
+
+    <select id="countByStr" resultType="long">
+        SELECT COUNT(*) FROM t_customer  c inner join t_user u on u.id=c.userid
+        <where>
+            <if test="userid != null and userid != ''">
+                (c.userid = #{userid} or (c.userid = '' or userid is null))
+            </if>
+            <if test="keyword != null and keyword !=''">
+                and (c.custname like concat('%',#{keyword},'%') or c.pinyin like concat('%',#{keyword},'%') or c.tel like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="findByType" resultType="Customer">
+        SELECT * FROM t_customer
+        WHERE type=#{customerTypeCompany}
+    </select>
+
+    <select id="findCustomerById" resultType="Customer">
+        
+        SELECT c.id,c.custname,c.tel,c.weixin,c.email,c.address,c.level,c.remark,c.pinyin,c.companyid,
+        	c.userid as "createUser.id",c.type,u.realname as "createUser.realname"
+         FROM t_customer  c inner join t_user u on u.id=c.userid
+         WHERE c.id=#{id};
+        
+    </select>
+
+    <select id="findByCompanyId" resultType="Customer">
+        select * from t_customer WHERE companyid=#{id};
+    </select>
+
+    <update id="update">
+        update t_customer set custname=#{custname},tel = #{tel},weixin = #{weixin},address=#{address},email=#{email},
+        userid=#{userid},pinyin=#{pinyin},companyid=#{companyid},companyname=#{companyname},type=#{type},remark=#{remark},
+        level=#{level}
+        where id = #{id}
+    </update>
+
+    <delete id="delCustomerById">
+        DELETE FROM t_customer WHERE id=#{id}
+    </delete>
+
+    <select id="findAll" resultType="Customer">
+        SELECT * FROM t_customer
+    </select>
+
+    <select id="findAllByUserid" resultType="Customer">
+        SELECT * FROM t_customer WHERE userid=#{userid}
+    </select>
+
+    <update id="openUpdate">
+        UPDATE t_customer SET userid=NULL, username=NULL WHERE id=#{id}
+    </update>
+
+    <update id="moveUpdate">
+        UPDATE t_customer set userid=#{userid},username=#{username} where id=#{id}
+    </update>
+
+
+
+    <select id="addCustCount" resultType="long">
+        SELECT COUNT(*) FROM t_customer
+         WHERE date(createtime) >= #{start}
+         and date(createtime) &lt;= #{end}
+    </select>
+</mapper>
